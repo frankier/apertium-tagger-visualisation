@@ -16,7 +16,7 @@ def name_to_attrs(name):
         attrs['cg'] = 2
     elif 'cginv_' in name:
         attrs['cg'] = 3
-    elif 'cg' in name:
+    elif 'cg_' in name:
         attrs['cg'] = 1
     else:
         attrs['cg'] = 0
@@ -56,7 +56,7 @@ def attrs_to_sort_tuple(attrs):
     if attrs is None:
         return
     return (attrs['sup'], attrs['cg'], TAGGER_ORDER.index(attrs['tagger']),
-            attrs['iters'], attrs['cattrim'])
+            attrs['iters'] or 0, attrs['cattrim'] or 0)
 
 
 def superscript(num):
@@ -79,12 +79,12 @@ def attrs_to_str(attrs):
         out = attrs['tagger'].title()
 
     if attrs['cg'] > 1:
-        out = "CG" + superscript(attrs['cg'] - 1) + "→" + out
+        out = "CG" + str(attrs['cg'] - 1) + "→" + out
     elif attrs['cg'] == 1:
         out = "CG→" + out
 
     if attrs['cgt']:
-        out = "CGT" + superscript(attrs['cgt']) + "→" + out
+        out = "CGT" + str(attrs['cgt']) + "→" + out
 
     if attrs['label_sup'] is not None or attrs['iters'] is not None:
         bits = []
@@ -92,6 +92,8 @@ def attrs_to_str(attrs):
             bits.append('sup' if attrs['label_sup'] else 'unsup')
         if attrs['iters'] is not None:
             bits.append('{} iters'.format(attrs['iters']))
+        if attrs['cattrim'] is not None:
+            bits.append('{} cats'.format(attrs['cattrim']))
         out += ' ({})'.format(', '.join(bits))
 
     return out
@@ -104,3 +106,19 @@ def value_to_str(value):
         return "{0:.2f}".format(value * 100)
 
 
+def read_data(fns):
+    input_data = {}
+
+    for fn in fns:
+        i = eval(open(fn).read())
+        for k in i:
+            if not i[k]:
+                continue
+            if k not in input_data:
+                input_data[k] = {}
+            for l in i[k]:
+                if not i[k][l]:
+                    continue
+                input_data[k][l] = i[k][l]
+
+    return input_data

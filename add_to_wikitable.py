@@ -1,12 +1,15 @@
 # -- encoding: utf-8 --
 
 import argparse
-import sys
 import locale
+import sys
+
 import mwparserfromhell
+from format_data import (attrs_to_sort_tuple, attrs_to_str, name_to_attrs,
+                         read_data, value_to_str)
 from mwparserfromhell.nodes.tag import Tag
 from mwparserfromhell.wikicode import Wikicode
-from format_data import attrs_to_sort_tuple, attrs_to_str, name_to_attrs
+
 
 def rdict(d):
     return {v: k for k, v in d.items()}
@@ -147,12 +150,7 @@ def main():
 
     value_idx = 1 if args.available else 0
 
-    input_data = {}
-
-    for result in args.results:
-        i = eval(open(result).read())
-        for k in i:
-            input_data[k] = i[k]
+    input_data = read_data(args.results)
 
     for lang, data in input_data.items():
         lang_idx = lang_order.index(lang)

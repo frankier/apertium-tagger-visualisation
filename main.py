@@ -1,28 +1,26 @@
-from math import pi
 import sys
-import numpy as np
-import pandas as pd
+from math import pi
 
-from bokeh.plotting import figure, show, output_file
 from bokeh.models.ranges import FactorRange
-from bokeh.models.widgets import Tabs, Panel
-
-from format_data import attrs_to_str, name_to_attrs, attrs_to_sort_tuple
+from bokeh.models.widgets import Panel, Tabs
+from bokeh.plotting import figure, output_file, show
+from format_data import (attrs_to_sort_tuple, attrs_to_str, name_to_attrs,
+                         read_data)
+from pprint import pprint
 
 input_data = {}
+
 
 def tagger_sort(x):
     return attrs_to_sort_tuple(name_to_attrs(x))
 
+
 def prettify_name(x):
     return attrs_to_str(name_to_attrs(x))
 
-for arg in sys.argv[1:]:
-    i = eval(open(arg).read())
-    for k in i:
-        input_data[k] = i[k]
-
+input_data = read_data(sys.argv[1:])
 languages = input_data.keys()
+pprint(input_data)
 
 sorted_tagger_names = {}
 all_tagger_names = set()
@@ -41,6 +39,9 @@ all_tagger_name = sorted(all_tagger_names, key=tagger_sort)
 tabs = []
 
 VERY_SMALL = 0.00001
+
+x_range = FactorRange(factors=[prettify_name(x) for x in all_tagger_name])
+y_range = (0.59, 1.01)
 
 for lang in languages:
     lang_data = input_data[lang]
@@ -75,11 +76,13 @@ for lang in languages:
 
     p = figure(
         title="",
-        x_range=FactorRange(factors=[prettify_name(x) for x in all_tagger_name]),
-        y_range=(0.59, 1.01),
-        plot_width=800,
-        tools='crosshair,hover,save,reset,ywheel_zoom,ypan')
+        x_range=x_range,
+        y_range=y_range,
+        plot_width=20 * len(all_tagger_names),
+        tools='crosshair,hover,save,reset,ywheel_zoom,ypan,resize')
     p.yaxis.bounds = (0.6, 1.0)
+    x_range = p.x_range
+    y_range = p.y_range
 
     # stems
     p.segment(taggers, maxes, taggers, uppers, line_width=1, line_color="black")
