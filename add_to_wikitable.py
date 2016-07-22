@@ -22,6 +22,7 @@ LANG_CODE_NAME_MAP = {
     'kaz': 'Kazakh',
     'por': 'Portuguese',
     'swe': 'Swedish',
+    'ita': 'Italian',
 }
 LANG_NAME_CODE_MAP = rdict(LANG_CODE_NAME_MAP)
 
