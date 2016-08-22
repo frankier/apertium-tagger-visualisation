@@ -4,19 +4,20 @@ from math import pi
 from bokeh.models.ranges import FactorRange
 from bokeh.models.widgets import Panel, Tabs
 from bokeh.plotting import figure, output_file, show
-from format_data import (attrs_to_sort_tuple, attrs_to_str, name_to_attrs,
-                         read_data)
+from experiment_spec import str_to_spec
+from format_data import attrs_to_sort_tuple, attrs_to_str, read_data
 from pprint import pprint
 
 input_data = {}
 
 
 def tagger_sort(x):
-    return attrs_to_sort_tuple(name_to_attrs(x))
+    return attrs_to_sort_tuple(str_to_spec(x))
 
 
 def prettify_name(x):
-    return attrs_to_str(name_to_attrs(x))
+    return attrs_to_str(str_to_spec(x))
+
 
 input_data = read_data(sys.argv[1:])
 languages = input_data.keys()
