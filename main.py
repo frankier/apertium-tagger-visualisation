@@ -57,8 +57,8 @@ for lang in languages:
     taggers = []
     for tagger in tagger_names:
         tagger_data = lang_data[tagger]
-        taggers.append(prettify_name(tagger))
-        #taggers.append(tagger)
+        #taggers.append(prettify_name(tagger))
+        taggers.append(tagger)
         if hasattr(tagger_data[1], "__getitem__"):
             mins.append(tagger_data[1][0])
             means.append(tagger_data[1][2])

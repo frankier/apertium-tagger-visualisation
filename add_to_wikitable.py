@@ -5,10 +5,11 @@ import locale
 import sys
 
 import mwparserfromhell
-from format_data import (attrs_to_sort_tuple, attrs_to_str, name_to_attrs,
+from format_data import (attrs_to_sort_tuple, attrs_to_str,
                          read_data, value_to_str)
 from mwparserfromhell.nodes.tag import Tag
 from mwparserfromhell.wikicode import Wikicode
+from experiment_spec import spec_to_str, str_to_spec
 
 
 def rdict(d):
@@ -162,7 +163,7 @@ def main():
             insert_into_wc(word_count_tr,
                            col_idx,
                            format_word_count(word_count))
-        data = [(name_to_attrs(name), value_to_str(value[value_idx]))
+        data = [(str_to_spec(name), value_to_str(value[value_idx]))
                 for name, value in data.items()]
         data = sorted(data, key=lambda pair: attrs_to_sort_tuple(pair[0]))
         table_idx = 4

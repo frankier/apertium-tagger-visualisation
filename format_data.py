@@ -1,62 +1,14 @@
 # -- encoding: utf-8 --
 
-TAGGER_ORDER = ['1st', 'unigram1', 'unigram2', 'unigram3', 'bigram', 'lwsw']
-
-
-def name_to_attrs(name):
-    attrs = {}
-    for tagger in TAGGER_ORDER:
-        if tagger in name:
-            attrs['tagger'] = tagger
-
-    if 'tagger' not in attrs:
-        return
-
-    if 'cgdual_' in name:
-        attrs['cg'] = 2
-    elif 'cginv_' in name:
-        attrs['cg'] = 3
-    elif 'cg_' in name:
-        attrs['cg'] = 1
-    else:
-        attrs['cg'] = 0
-
-    if 'cgt' in name:
-        attrs['cgt'] = int(name.split('cgt')[1].split('_')[0])
-    else:
-        attrs['cgt'] = 0
-
-    if attrs['tagger'] == 'lwsw':
-        attrs['label_sup'] = None
-        attrs['sup'] = False
-    elif 'unsup' in name:
-        attrs['label_sup'] = False
-        attrs['sup'] = False
-    elif 'sup' in name:
-        attrs['label_sup'] = True
-        attrs['sup'] = True
-    else:
-        attrs['label_sup'] = None
-        attrs['sup'] = 'unigram' in name
-
-    if '_i' in name:
-        attrs['iters'] = int(name.split('_i')[1].split('_')[0])
-    else:
-        attrs['iters'] = None
-
-    if '_j' in name:
-        attrs['cattrim'] = int(name.split('_j')[1].split('_')[0])
-    else:
-        attrs['cattrim'] = None
-
-    return attrs
+TAGGER_ORDER = ['1st', 'unigram', 'bigram', 'lwsw', 'percep']
 
 
 def attrs_to_sort_tuple(attrs):
     if attrs is None:
         return
-    return (attrs['sup'], attrs['cg'], TAGGER_ORDER.index(attrs['tagger']),
-            attrs['iters'] or 0, attrs['cattrim'] or 0)
+    lattrs, kwattrs = attrs
+    return (kwattrs['sup'], kwattrs['cg'], TAGGER_ORDER.index(lattrs[0]),
+            kwattrs.get('i', 0), kwattrs.get('j', 0), kwattrs.get('mtx'))
 
 
 def superscript(num):
@@ -71,30 +23,39 @@ def superscript(num):
 
 
 def attrs_to_str(attrs):
-    if attrs['tagger'].startswith('unigram'):
-        out = 'Unigram model ' + attrs['tagger'][len('unigram'):]
-    elif attrs['tagger'] == '1st':
-        out = attrs['tagger']
-    else:
-        out = attrs['tagger'].title()
+    lattrs, kwattrs = attrs
 
-    if attrs['cg'] > 1:
-        out = "CG" + str(attrs['cg'] - 1) + "→" + out
-    elif attrs['cg'] == 1:
+    if lattrs[0] == 'unigram':
+        out = 'Unigram model ' + kwattrs['model']
+    elif lattrs[0] == '1st':
+        out = lattrs[0]
+    else:
+        out = lattrs[0].title()
+
+    if kwattrs['cg'] > 1:
+        out = "CG" + str(kwattrs['cg'] - 1) + "→" + out
+    elif kwattrs['cg'] == 1:
         out = "CG→" + out
 
-    if attrs['cgt']:
+    if kwattrs.get('cgt'):
         out = "CGT" + str(attrs['cgt']) + "→" + out
 
-    if attrs['label_sup'] is not None or attrs['iters'] is not None:
-        bits = []
-        if attrs['label_sup'] is not None:
-            bits.append('sup' if attrs['label_sup'] else 'unsup')
-        if attrs['iters'] is not None:
-            bits.append('{} iters'.format(attrs['iters']))
-        if attrs['cattrim'] is not None:
-            bits.append('{} cats'.format(attrs['cattrim']))
-        out += ' ({})'.format(', '.join(bits))
+    bracket_bits = []
+
+    if lattrs[0] == 'gen' and kwattrs['model'] == 'bigram':
+        bracket_bits.append('sup' if kwattrs['sup'] else 'unsup')
+
+    if 'i' in kwattrs:
+        bracket_bits.append('{} iters'.format(kwattrs['i']))
+
+    if 'j' in kwattrs:
+        bracket_bits.append('{} cats'.format(kwattrs['j']))
+
+    if lattrs[0] == 'percep':
+        bracket_bits.append(kwattrs['mtx'])
+
+    if bracket_bits:
+        out += ' ({})'.format(', '.join(bracket_bits))
 
     return out
 
